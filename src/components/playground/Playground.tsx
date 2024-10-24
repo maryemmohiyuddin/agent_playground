@@ -51,11 +51,54 @@ export default function Playground({
   const { name } = useRoomInfo();
   const [transcripts, setTranscripts] = useState<ChatMessageType[]>([]);
   const { localParticipant } = useLocalParticipant();
+// Send messages to all participants
+const [message, setMessage] = useState(""); // Local state to store the message input
+const [imageShow, setImageShow] = useState<Number>(); // Local state to store the message input
+
+
+// Set up the data channel for "chat"
+const { message: latestMessage, send } = useDataChannel("chat", (msg) => {
+  console.log("Message received from participant:", msg);
+});
+
+// Handler for sending a message
+const handleSendMessage = () => {
+  // setMessage("newmessage")
+  // setMessage("new message");  // Clear the input field
+  if (message) {
+  console.log("message", message)
+
+    // Convert the string message to Uint8Array
+    const encoder = new TextEncoder();
+    const encodedMessage = encoder.encode(message);
+
+    // Define the options (e.g., send to all participants by passing an empty array for destinationParticipantIds)
+
+
+    // Send the encoded message with the options
+    const options = {
+      destinationParticipantIds: [],  // Correct name and syntax
+      topic: message // Correct topic format
+    };
+    
+    // Now, call send with the payload and options object
+    send(encodedMessage, options);
+    
+    console.log("Message sent:", message);
+    // setMessage("");  // Clear the input field
+  }
+
+};
 
   const voiceAssistant = useVoiceAssistant();
 
   const roomState = useConnectionState();
   const tracks = useTracks();
+  useEffect(() => {
+    if (roomState === ConnectionState.Connected) {
+      handleSendMessage()
+    }
+  }, [message]);
 
   useEffect(() => {
     if (roomState === ConnectionState.Connected) {
@@ -82,6 +125,21 @@ export default function Playground({
 
   const onDataReceived = useCallback(
     (msg: any) => {
+      console.log("here in data receving", msg)
+      if(msg.topic=='Show Image 1'){
+        setImageShow(1)
+        setMessage("https://www.loroparque-fundacion.org/app/uploads/2022/01/El-delfin-rosado-una-criatura-extraordinaria.jpg.webp")
+      }
+      else if(msg.topic=='Show Image 2'){
+        setImageShow(2)
+        setMessage("https://th-thumbnailer.cdn-si-edu.com/4ARFHG61zPOrO3ZV63zVE8Ih_-U=/fit-in/1200x0/filters:focal(400x267:401x268)/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer_public/8e/5f/8e5f9de4-da49-4ae2-b9a6-a1b4fd2b88f3/gettyimages-541063840.jpeg")
+
+      }
+      else if(msg.topic=='Show Image 3'){
+        setImageShow(3)
+        setMessage("https://www.scubadiving.com/sites/default/files/styles/small/public/scubadiving/orca_moms_baby_adult_sons-teaser-image_2.png?itok=KOmCkMFe")
+
+      }
       if (msg.topic === "transcription") {
         const decoded = JSON.parse(
           new TextDecoder("utf-8").decode(msg.payload)
@@ -330,19 +388,19 @@ export default function Playground({
   ]);
 
   let mobileTabs: PlaygroundTab[] = [];
-  if (config.settings.outputs.video) {
-    mobileTabs.push({
-      title: "Video",
-      content: (
-        <PlaygroundTile
-          className="w-full h-full grow"
-          childrenClassName="justify-center"
-        >
-          {videoTileContent}
-        </PlaygroundTile>
-      ),
-    });
-  }
+//   if (config.settings.outputs.video) {
+//     mobileTabs.push({
+//       title: "Photo",
+//       content: (
+//         <PlaygroundTile
+//           className="w-full h-full grow"
+//           childrenClassName="justify-center"
+//         >
+// <img src='https://www.loroparque-fundacion.org/app/uploads/2022/01/El-delfin-rosado-una-criatura-extraordinaria.jpg.webp' />
+//           </PlaygroundTile>
+//       ),
+//     });
+//   }
 
   if (config.settings.outputs.audio) {
     mobileTabs.push({
@@ -410,14 +468,32 @@ export default function Playground({
               : "flex"
           }`}
         >
-          {config.settings.outputs.video && (
+          {imageShow==1 && (
             <PlaygroundTile
-              title="Video"
+              title="Photo"
               className="w-full h-full grow"
               childrenClassName="justify-center"
             >
-              {videoTileContent}
+              <img src='https://www.loroparque-fundacion.org/app/uploads/2022/01/El-delfin-rosado-una-criatura-extraordinaria.jpg.webp'/>
             </PlaygroundTile>
+          )}
+           {imageShow==2 && (
+            <PlaygroundTile
+              title="Photo"
+              className="w-full h-full grow"
+              childrenClassName="justify-center"
+            >
+              <img src='https://th-thumbnailer.cdn-si-edu.com/4ARFHG61zPOrO3ZV63zVE8Ih_-U=/fit-in/1200x0/filters:focal(400x267:401x268)/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer_public/8e/5f/8e5f9de4-da49-4ae2-b9a6-a1b4fd2b88f3/gettyimages-541063840.jpeg'/>
+              </PlaygroundTile>
+          )}
+           {imageShow==3 && (
+            <PlaygroundTile
+              title="Photo"
+              className="w-full h-full grow"
+              childrenClassName="justify-center"
+            >
+              <img src='https://www.scubadiving.com/sites/default/files/styles/small/public/scubadiving/orca_moms_baby_adult_sons-teaser-image_2.png?itok=KOmCkMFe'/>
+              </PlaygroundTile>
           )}
           {config.settings.outputs.audio && (
             <PlaygroundTile

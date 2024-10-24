@@ -34,6 +34,10 @@ export function TranscriptionTile({
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const { chatMessages, send: sendChat } = useChat();
 
+
+  useEffect(()=>{
+console.log("messages", messages)
+  },[messages])
   // store transcripts
   useEffect(() => {
     agentMessages.segments.forEach((s) =>
@@ -56,8 +60,18 @@ export function TranscriptionTile({
         )
       )
     );
+    console.log("Transcripts", transcripts)
+    console.log("local messages", localMessages)
+    console.log("agent messages", agentMessages)
+
+
 
     const allMessages = Array.from(transcripts.values());
+    console.log("allmessages", allMessages)
+    console.log("chatmessages", chatMessages)
+    console.log("transcript.valhes", transcripts.values())
+
+
     for (const msg of chatMessages) {
       const isAgent =
         msg.from?.identity === agentAudioTrack.participant?.identity;
@@ -92,7 +106,8 @@ export function TranscriptionTile({
   ]);
 
   return (
-    <ChatTile messages={messages} accentColor={accentColor} onSend={sendChat} />
+<ChatTile messages={messages} accentColor={accentColor} onSend={sendChat} />
+
   );
 }
 
