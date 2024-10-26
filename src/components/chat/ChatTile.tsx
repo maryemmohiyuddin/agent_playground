@@ -16,9 +16,10 @@ type ChatTileProps = {
   messages: ChatMessageType[];
   accentColor: string;
   onSend?: (message: string) => Promise<ComponentsChatMessage>;
+  allMessage?:any
 };
 
-export const ChatTile = ({ messages, accentColor, onSend }: ChatTileProps) => {
+export const ChatTile = ({ messages, accentColor, onSend, allMessage }: ChatTileProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (containerRef.current) {
@@ -58,6 +59,7 @@ export const ChatTile = ({ messages, accentColor, onSend }: ChatTileProps) => {
         placeholder="Type a message"
         accentColor={accentColor}
         onSend={onSend}
+        allMessage={allMessage}
       />
     </div>
   );

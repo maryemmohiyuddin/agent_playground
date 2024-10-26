@@ -55,7 +55,14 @@ export default function Playground({
 const [message, setMessage] = useState(""); // Local state to store the message input
 const [imageShow, setImageShow] = useState<Number>(); // Local state to store the message input
 
+const [lastMessage, setLastMessage] = useState<any>([]);
 
+  const handleLastMessage = (value: any) => {
+    setLastMessage(value);
+    console.log("last message is ", value);
+    onConnect(roomState === ConnectionState.Disconnected);
+    setImageShow(undefined)
+  };
 // Set up the data channel for "chat"
 const { message: latestMessage, send } = useDataChannel("chat", (msg) => {
   console.log("Message received from participant:", msg);
@@ -102,8 +109,8 @@ const handleSendMessage = () => {
 
   useEffect(() => {
     if (roomState === ConnectionState.Connected) {
-      localParticipant.setCameraEnabled(config.settings.inputs.camera);
-      localParticipant.setMicrophoneEnabled(config.settings.inputs.mic);
+      // localParticipant.setCameraEnabled(config.settings.inputs.camera);
+      // localParticipant.setMicrophoneEnabled(config.settings.inputs.mic);
     }
   }, [config, localParticipant, roomState]);
 
@@ -159,7 +166,7 @@ const handleSendMessage = () => {
         ]);
       }
     },
-    [transcripts]
+    []
   );
 
   useDataChannel(onDataReceived);
@@ -264,6 +271,7 @@ const handleSendMessage = () => {
         <TranscriptionTile
           agentAudioTrack={voiceAssistant.audioTrack}
           accentColor={config.settings.theme_color}
+          onLastMessage={handleLastMessage}
         />
       );
     }
@@ -330,27 +338,6 @@ const handleSendMessage = () => {
             />
           </div>
         </ConfigurationPanelItem>
-        {localVideoTrack && (
-          <ConfigurationPanelItem
-            title="Camera"
-            deviceSelectorKind="videoinput"
-          >
-            <div className="relative">
-              <VideoTrack
-                className="rounded-sm border border-gray-800 opacity-70 w-full"
-                trackRef={localVideoTrack}
-              />
-            </div>
-          </ConfigurationPanelItem>
-        )}
-        {localMicTrack && (
-          <ConfigurationPanelItem
-            title="Microphone"
-            deviceSelectorKind="audioinput"
-          >
-            <AudioInputTile trackRef={localMicTrack} />
-          </ConfigurationPanelItem>
-        )}
         <div className="w-full">
           <ConfigurationPanelItem title="Color">
             <ColorPicker
@@ -446,9 +433,11 @@ const handleSendMessage = () => {
         height={headerHeight}
         accentColor={config.settings.theme_color}
         connectionState={roomState}
-        onConnectClicked={() =>
-          onConnect(roomState === ConnectionState.Disconnected)
-        }
+        onConnectClicked={() => {
+          onConnect(roomState === ConnectionState.Disconnected);
+          console.log("clicked the button");
+        }}
+        
       />
       <div
         className={`flex gap-4 py-4 grow w-full selection:bg-${config.settings.theme_color}-900`}

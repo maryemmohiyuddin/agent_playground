@@ -1,11 +1,16 @@
 import { useWindowResize } from "@/hooks/useWindowResize";
 import { useCallback, useEffect, useRef, useState } from "react";
-
+import {
+ 
+  useDataChannel,
+  
+} from "@livekit/components-react";
 type ChatMessageInput = {
   placeholder: string;
   accentColor: string;
   height: number;
   onSend?: (message: string) => void;
+  allMessage:any
 };
 
 export const ChatMessageInput = ({
@@ -13,6 +18,7 @@ export const ChatMessageInput = ({
   accentColor,
   height,
   onSend,
+  allMessage
 }: ChatMessageInput) => {
   const [message, setMessage] = useState("");
   const [inputTextWidth, setInputTextWidth] = useState(0);
@@ -22,6 +28,37 @@ export const ChatMessageInput = ({
   const windowSize = useWindowResize();
   const [isTyping, setIsTyping] = useState(false);
   const [inputHasFocus, setInputHasFocus] = useState(false);
+  const [inputEnabled, setInputEnabled] = useState(false);
+  useEffect(() => {
+    console.log("in useffect agent messages", allMessage)
+    if(allMessage){
+    // Check if agentMessage has any items
+    if (allMessage.length > 0) {
+
+      const segments=allMessage
+      // Get the last message
+      const lastMessage = segments[segments.length - 1].message;
+  
+      // Define target phrases
+      const targetPhrases = [
+        'Are you ready to learn about dolphins?',
+        "Please answer in 'yes' or 'no'.",
+        'Please ask your question.',
+        'Do you have any more questions?',
+        'Do you have any questions about this image?'
+      ];
+  
+      // Check if the last message matches any target phrase
+      if (targetPhrases.some(phrase => lastMessage.includes(phrase))&& segments[segments.length-1].name=='Agent') {
+        console.log("Last message matches one of the target phrases!");
+    console.log("Setting input true")
+
+        setInputEnabled(true)
+        // Add any additional actions you want to perform here
+      }
+    }
+  }
+  }, [allMessage]);
 
   const handleSend = useCallback(() => {
     if (!onSend) {
@@ -33,6 +70,9 @@ export const ChatMessageInput = ({
 
     onSend(message);
     setMessage("");
+    console.log("Setting input false")
+    setInputEnabled(false)
+    
   }, [onSend, message]);
 
   useEffect(() => {
@@ -84,6 +124,7 @@ export const ChatMessageInput = ({
             paddingLeft: message.length > 0 ? "12px" : "24px",
             caretShape: "block",
           }}
+          disabled={!inputEnabled}
           placeholder={placeholder}
           value={message}
           onChange={(e) => {

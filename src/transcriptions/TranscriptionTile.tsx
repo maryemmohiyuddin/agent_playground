@@ -16,9 +16,13 @@ import { useEffect, useState } from "react";
 export function TranscriptionTile({
   agentAudioTrack,
   accentColor,
+  onLastMessage,  // Callback prop for the parent
+
 }: {
   agentAudioTrack: TrackReferenceOrPlaceholder;
   accentColor: string;
+  onLastMessage: (value:any) => void;  // Callback function type
+ 
 }) {
   const agentMessages = useTrackTranscription(agentAudioTrack);
   const localParticipant = useLocalParticipant();
@@ -32,9 +36,29 @@ export function TranscriptionTile({
     new Map()
   );
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
+  const [allMessage, setAllMessage] = useState<any>([]);
+
   const { chatMessages, send: sendChat } = useChat();
+  useEffect(() => {
+    if (allMessage && allMessage.length > 0) {
+      const lastMessage = allMessage[allMessage.length - 1].message;
+  
+      // Define target phrases
+      const targetPhrases = ['Goodbye!', 'All images have been described. Goodbye!'];
+  
+      // Check if the last message matches any target phrase
+      if (
+        targetPhrases.some(phrase => lastMessage.includes(phrase)) &&
+        allMessage[allMessage.length - 1].name === 'Agent'
+      ) {
+        // Trigger callback with updated messages
+        onLastMessage(true);
+      }
+    }
+  }, [allMessage]);
+  
 
-
+let allMessages;
   useEffect(()=>{
 console.log("messages", messages)
   },[messages])
@@ -66,7 +90,8 @@ console.log("messages", messages)
 
 
 
-    const allMessages = Array.from(transcripts.values());
+    allMessages = Array.from(transcripts.values());
+    setAllMessage(allMessages)
     console.log("allmessages", allMessages)
     console.log("chatmessages", chatMessages)
     console.log("transcript.valhes", transcripts.values())
@@ -106,7 +131,7 @@ console.log("messages", messages)
   ]);
 
   return (
-<ChatTile messages={messages} accentColor={accentColor} onSend={sendChat} />
+<ChatTile messages={messages} accentColor={accentColor} onSend={sendChat} allMessage={allMessage} />
 
   );
 }
